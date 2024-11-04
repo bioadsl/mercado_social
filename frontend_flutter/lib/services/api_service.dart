@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  final String baseUrl = 'http://localhost:8080/users';
+  final String baseUrl = 'http://localhost:8080';
 
   // Método para registrar um usuário
   Future<Map<String, dynamic>> registerUser(Map<String, dynamic> userData) async {

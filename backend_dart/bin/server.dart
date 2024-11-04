@@ -4,6 +4,7 @@ import 'package:shelf/shelf_io.dart' as io;
 import 'package:shelf_router/shelf_router.dart';
 import 'package:mysql1/mysql1.dart';
 
+// Configurações do banco de dados
 final dbSettings = ConnectionSettings(
   host: 'localhost',
   port: 3306,
@@ -12,6 +13,7 @@ final dbSettings = ConnectionSettings(
   db: 'market_control',
 );
 
+// Classe de serviço para APIs
 class ApiService {
   Future<Response> registerUser(Request request) async {
     MySqlConnection? conn;
@@ -53,13 +55,15 @@ class ApiService {
       }
 
       return Response.ok(jsonEncode({'message': 'User registered successfully'}),
-                         headers: {'Content-Type': 'application/json'});
+          headers: {'Content-Type': 'application/json'});
     } on MySqlException catch (e) {
-      return Response.internalServerError(body: jsonEncode({'error': e.message}),
-                                           headers: {'Content-Type': 'application/json'});
+      return Response.internalServerError(
+          body: jsonEncode({'error': e.message}),
+          headers: {'Content-Type': 'application/json'});
     } catch (e) {
-      return Response.internalServerError(body: jsonEncode({'error': 'Failed to register user'}),
-                                           headers: {'Content-Type': 'application/json'});
+      return Response.internalServerError(
+          body: jsonEncode({'error': 'Failed to register user'}),
+          headers: {'Content-Type': 'application/json'});
     } finally {
       await conn?.close();
     }
@@ -78,33 +82,63 @@ class ApiService {
 
       if (results.isNotEmpty) {
         return Response.ok(jsonEncode({'message': 'Login successful'}),
-                           headers: {'Content-Type': 'application/json'});
+            headers: {'Content-Type': 'application/json'});
       } else {
         return Response.forbidden(jsonEncode({'error': 'Invalid credentials'}),
-                                  headers: {'Content-Type': 'application/json'});
+            headers: {'Content-Type': 'application/json'});
       }
     } on MySqlException catch (e) {
-      return Response.internalServerError(body: jsonEncode({'error': e.message}),
-                                           headers: {'Content-Type': 'application/json'});
+      return Response.internalServerError(
+          body: jsonEncode({'error': e.message}),
+          headers: {'Content-Type': 'application/json'});
     } catch (e) {
-      return Response.internalServerError(body: jsonEncode({'error': 'Failed to login'}),
-                                           headers: {'Content-Type': 'application/json'});
+      return Response.internalServerError(
+          body: jsonEncode({'error': 'Failed to login'}),
+          headers: {'Content-Type': 'application/json'});
     } finally {
       await conn?.close();
     }
   }
 }
 
+// Middleware para habilitar CORS
+Response _corsMiddleware(Response response) {
+  return response.change(headers: {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  });
+}
+
+// Middleware para lidar com requisições OPTIONS e adicionar o cabeçalho CORS
+Handler addCors(Handler handler) {
+  final pipeline = const Pipeline()
+      .addMiddleware(logRequests())
+      .addMiddleware((innerHandler) {
+    return (request) async {
+      if (request.method == 'OPTIONS') {
+        return Response.ok('', headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        });
+      }
+      final response = await innerHandler(request);
+      return _corsMiddleware(response);
+    };
+  });
+  return pipeline.addHandler(handler);
+}
+
 void main() async {
   final apiService = ApiService();
   final router = Router();
 
-  router.post('/register', apiService.registerUser);
-  router.post('/login', apiService.loginUser);
+router.post('/users/register', apiService.registerUser);
+router.post('/users/login', apiService.loginUser);
 
-  final handler = const Pipeline()
-      .addMiddleware(logRequests())
-      .addHandler(router);
+  // Adiciona o middleware CORS
+  final handler = addCors(router);
 
   await io.serve(handler, 'localhost', 8080);
   print('Server listening on http://localhost:8080');
