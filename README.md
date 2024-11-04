@@ -45,6 +45,45 @@ Este projeto é um aplicativo Flutter para controle de um mercado social, com fu
 - **Backend**: Dart com o framework Shelf
 - **Banco de Dados**: MySQL
 
+
+### Estrutura 
+
+# Estrutura do Projeto Mercado Social
+
+```plaintext
+mercado_social/
+├── backend_dart/
+│   ├── bin/
+│   │   └── server.dart          # Arquivo principal do servidor Shelf
+│   ├── lib/
+│   │   └── services/
+│   │       └── api_service.dart # Lógica de manipulação de dados no banco de dados
+│   ├── pubspec.yaml             # Arquivo de configuração das dependências do Dart
+│   └── README.md                # Documentação do backend
+│
+├── frontend_flutter/
+│   ├── lib/
+│   │   ├── main.dart            # Entrada principal do app Flutter
+│   │   ├── views/
+│   │   │   ├── login_view.dart          # Tela de login
+│   │   │   ├── registration_view.dart   # Tela de cadastro
+│   │   │   ├── welcome_view.dart        # Tela de boas-vindas pós-login
+│   │   │   └── profile_view.dart        # Tela de perfil com edição
+│   │   ├── services/
+│   │   │   └── api_service.dart         # Lógica de comunicação com o backend via HTTP
+│   │   └── widgets/
+│   │       └── photo_upload_widget.dart # Widget para upload de foto
+│   ├── pubspec.yaml             # Arquivo de configuração do Flutter
+│   └── README.md                # Documentação do frontend
+│
+├── scripts/
+│   ├── install.sh               # Script de instalação e inicialização do projeto (Linux/Mac)
+│   ├── install.bat              # Script de instalação e inicialização do projeto (Windows)
+│   └── start.sh                 # Script para iniciar frontend e backend
+│
+└── README.md                    # Documentação principal do projeto
+
+
 ### Instalação
 
 #### Backend
