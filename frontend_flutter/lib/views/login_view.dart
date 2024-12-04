@@ -9,7 +9,7 @@ class LoginView extends StatelessWidget {
   Widget build(BuildContext context) {
     final TextEditingController emailController = TextEditingController();
     final TextEditingController passwordController = TextEditingController();
-    final ApiService apiService = ApiService(); // Instância do serviço
+    final ApiService apiService = ApiService();
 
     return Scaffold(
       appBar: AppBar(
@@ -33,7 +33,7 @@ class LoginView extends StatelessWidget {
                 decoration: const InputDecoration(
                   labelText: 'Senha',
                 ),
-                obscureText: true,
+                obscureText: true, // Correct usage of obscureText
               ),
               const SizedBox(height: 16),
               ElevatedButton(
@@ -41,17 +41,19 @@ class LoginView extends StatelessWidget {
                   final email = emailController.text;
                   final password = passwordController.text;
 
-                  final response = await apiService.loginUser(email, password); // Chamada corrigida
+                  final response = await apiService.loginUser(email, password);
 
                   if (response['message'] != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(response['message'])),
                     );
-                    // Navegue para a próxima tela
                   } else if (response['error'] != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(content: Text(response['error'])),
                     );
+                  } else {
+                    // Navegue para a próxima tela após o login bem-sucedido
+                    Navigator.pushReplacementNamed(context, '/home'); // Substitui a tela de login pela tela inicial
                   }
                 },
                 child: const Text('Login'),
@@ -59,10 +61,9 @@ class LoginView extends StatelessWidget {
               const SizedBox(height: 16),
               TextButton(
                 onPressed: () {
-                  // Navegar para a tela de cadastro
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => const RegistrationView()),
+                    MaterialPageRoute(builder: (context) => RegistrationView()),
                   );
                 },
                 child: const Text('Não tem uma conta? Cadastre-se'),

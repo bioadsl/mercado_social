@@ -18,4 +18,32 @@ class User {
     required this.phone,
     required this.email,
   });
+
+  // Converte o objeto User para JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'fullName': fullName,
+      'birthDate': birthDate.toIso8601String(), // Converte a data para string
+      'gender': gender,
+      'maritalStatus': maritalStatus,
+      'idNumber': idNumber,
+      'address': address,
+      'phone': phone,
+      'email': email,
+    };
+  }
+
+  // Cria um objeto User a partir de JSON
+  factory User.fromJson(Map<String, dynamic> json) {
+    return User(
+      fullName: json['fullName'],
+      birthDate: DateTime.parse(json['birthDate']),
+      gender: json['gender'],
+      maritalStatus: json['maritalStatus'],
+      idNumber: json['idNumber'],
+      address: json['address'],
+      phone: json['phone'],
+      email: json['email'],
+    );
+  }
 }

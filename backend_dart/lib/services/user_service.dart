@@ -1,7 +1,7 @@
-// backend_dart/lib/services/user_service.dart
-
-import 'dart:convert';
 import 'package:shelf/shelf.dart';
+import 'package:qr_flutter/qr_flutter.dart'; // Adicione essa biblioteca ao backend.
+import 'dart:convert';
+import 'dart:io';
 import '../config/database_config.dart';
 
 class UserService {
@@ -9,8 +9,11 @@ class UserService {
     final conn = await DatabaseConfig.getConnection();
 
     try {
+      // Gerar um número de inscrição único
+      final registrationNumber = DateTime.now().millisecondsSinceEpoch.toString();
+
       final result = await conn.query(
-        'INSERT INTO users (full_name, birth_date, gender, marital_status, id_number, address, phone, email, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO users (full_name, birth_date, gender, marital_status, id_number, address, phone, email, password, registration_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
         [
           userData['full_name'],
           userData['birth_date'],
@@ -20,47 +23,37 @@ class UserService {
           userData['address'],
           userData['phone'],
           userData['email'],
-          userData['password']
+          userData['password'],
+          registrationNumber,
         ],
       );
 
-      final userId = result.insertId;
-      await conn.query(
-        'INSERT INTO social_data (user_id, income, housing_condition, employment_status, education_level, special_needs, other_social_programs, health_condition) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-        [
-          userId,
-          userData['income'],
-          userData['housing_condition'],
-          userData['employment_status'],
-          userData['education_level'],
-          userData['special_needs'],
-          userData['other_social_programs'],
-          userData['health_condition']
-        ],
-      );
+      // Gerar o QR code com os dados do usuário e o número de inscrição
+      final qrCodeData = jsonEncode({
+        'full_name': userData['full_name'],
+        'registration_number': registrationNumber,
+      });
 
-      return Response.ok(jsonEncode({'message': 'User registered successfully'}));
+      final qrCode = await _generateQRCode(qrCodeData);
+
+      return Response.ok(jsonEncode({
+        'message': 'User registered successfully',
+        'registration_number': registrationNumber,
+        'qr_code': qrCode,
+      }));
     } finally {
       await conn.close();
     }
   }
 
-  Future<Response> loginUser(Map<String, dynamic> credentials) async {
-    final conn = await DatabaseConfig.getConnection();
-    final email = credentials['email'];
-    final password = credentials['password'];
-
-    final results = await conn.query(
-      'SELECT * FROM users WHERE email = ? AND password = ?',
-      [email, password],
+  Future<String> _generateQRCode(String data) async {
+    final qrImage = QrPainter(
+      data: data,
+      version: QrVersions.auto,
+      gapless: true,
     );
-
-    await conn.close();
-
-    if (results.isNotEmpty) {
-      return Response.ok(jsonEncode({'message': 'Login successful'}));
-    } else {
-      return Response.forbidden(jsonEncode({'message': 'Invalid credentials'}));
-    }
+    final pngBytes = await qrImage.toImageData(200).then((byteData) => byteData!.buffer.asUint8List());
+    final base64Image = base64Encode(pngBytes);
+    return 'data:image/png;base64,$base64Image';
   }
 }

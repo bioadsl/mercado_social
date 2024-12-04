@@ -14,10 +14,12 @@ Este projeto é um aplicativo Flutter para controle de um mercado social, com fu
    - Nome completo
    - Data de nascimento
    - Gênero
-   - Estado civil
-   - Número de identificação (RG, CPF ou outro documento oficial)
+   - Estado civil (combo box com opções)
+   - Tipo documento (RG, CPF ou outro documento oficial)
+   - Documento
    - Endereço completo
-   - Telefone e e-mail
+   - Telefone 
+   - E-mail
    - Foto de perfil
 
 3. **Cadastro de Dados Socioeconômicos**:
@@ -38,6 +40,16 @@ Este projeto é um aplicativo Flutter para controle de um mercado social, com fu
 6. **Tela de Perfil do Usuário**:
    - Permite a visualização e edição dos dados pessoais e socioeconômicos.
    - Inclui a possibilidade de atualizar a **foto de perfil**.
+
+7. **Cartão do Usuário**:
+   - Permite a visualização dos dados pessoais
+   - Possui o codigo do usuario que sera utilizado para controle de retirada de alimentos
+   - Inclui os dados pessoais com QrCode e a **foto de perfil**.
+
+7. **Tela de administrador**:
+   - Permite a visualização, consulta e edição dos usuarios
+   - Possui a opção de aprovação do cadastro com validade de 3 meses podendo ser renovaveis para controle de retirada de alimentos
+
 
 ### Arquitetura
 

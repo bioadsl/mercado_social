@@ -8,8 +8,11 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  shelf_router: ^1.1.4
+  shelf_router: ^1.0.0
+  shelf: ^1.4.0
+  qr_flutter: ^4.0.0
   mysql1: ^0.20.0
+  stack_trace: ^1.12.0
   # path: ^1.8.0
 
 dev_dependencies:

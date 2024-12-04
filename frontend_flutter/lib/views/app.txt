@@ -1,0 +1,605 @@
+//login_view.dart
+
+
+import 'package:flutter/material.dart';
+import 'package:frontend_flutter/services/api_service.dart';
+import 'package:frontend_flutter/views/registration_view.dart';
+
+
+class LoginView extends StatelessWidget {
+  const LoginView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final TextEditingController emailController = TextEditingController();
+    final TextEditingController passwordController = TextEditingController();
+    final ApiService apiService = ApiService(); // Instância do serviço
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Login'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              TextField(
+                controller: emailController,
+                decoration: const InputDecoration(
+                  labelText: 'Email',
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: passwordController,
+                decoration: const InputDecoration(
+                  labelText: 'Senha',
+                ),
+                obscureText: true,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () async {
+                  final email = emailController.text;
+                  final password = passwordController.text;
+
+                  final response = await apiService.loginUser(email, password); // Chamada corrigida
+
+                  if (response['message'] != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(response['message'])),
+                    );
+                    // Navegue para a próxima tela
+                  } else if (response['error'] != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(response['error'])),
+                    );
+                  }
+                },
+                child: const Text('Login'),
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () {
+                  // Navegar para a tela de cadastro
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => RegistrationView()),
+                  );
+                },
+                child: const Text('Não tem uma conta? Cadastre-se'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+
+// personal_data_view.dart
+
+import 'package:flutter/material.dart';
+import 'package:frontend_flutter/services/api_service.dart';
+
+class PersonalDataView extends StatelessWidget {
+  final TextEditingController fullNameController = TextEditingController();
+  final TextEditingController birthDateController = TextEditingController();
+  final TextEditingController genderController = TextEditingController();
+  final TextEditingController maritalStatusController = TextEditingController();
+  final TextEditingController idNumberController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Dados Pessoais')),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(controller: fullNameController, decoration: InputDecoration(labelText: 'Nome Completo')),
+            // Demais campos aqui...
+            ElevatedButton(
+              onPressed: () {
+                // Avança para a próxima tela (dados socioeconômicos)
+              },
+              child: Text('Próximo'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+ 
+ 
+ //welcome_view.dart
+ 
+ 
+ 
+ // lib/views/welcome_view.dart
+
+import 'package:flutter/material.dart';
+
+class WelcomeView extends StatelessWidget {
+  final String userName;
+
+  const WelcomeView({Key? key, required this.userName}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Bem-vindo!'),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'Olá, $userName!',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Bem-vindo ao Mercado Social! Aqui você pode acessar e gerenciar suas informações.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 30),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/profile');
+                },
+                child: const Text('Ver Perfil'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+ 
+ 
+ 
+ 
+ // profile_view.dart
+ 
+ 
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+import 'qr_code_view.dart'; // Importe a tela do QR Code
+
+class ProfileView extends StatefulWidget {
+  final Map<String, dynamic> userData;
+
+  const ProfileView({Key? key, required this.userData}) : super(key: key);
+
+  @override
+  _ProfileViewState createState() => _ProfileViewState();
+}
+
+class _ProfileViewState extends State<ProfileView> {
+  late TextEditingController fullNameController;
+  late TextEditingController birthDateController;
+  late TextEditingController genderController;
+  late TextEditingController maritalStatusController;
+  late TextEditingController idNumberController;
+  late TextEditingController addressController;
+  late TextEditingController phoneController;
+  late TextEditingController emailController;
+  late TextEditingController incomeController;
+  late TextEditingController housingConditionController;
+  late TextEditingController employmentStatusController;
+  late TextEditingController educationLevelController;
+
+  File? _profileImage;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Inicializa os controladores com dados do usuário
+    fullNameController = TextEditingController(text: widget.userData['full_name']);
+    birthDateController = TextEditingController(text: widget.userData['birth_date']);
+    genderController = TextEditingController(text: widget.userData['gender']);
+    maritalStatusController = TextEditingController(text: widget.userData['marital_status']);
+    idNumberController = TextEditingController(text: widget.userData['id_number']);
+    addressController = TextEditingController(text: widget.userData['address']);
+    phoneController = TextEditingController(text: widget.userData['phone']);
+    emailController = TextEditingController(text: widget.userData['email']);
+    incomeController = TextEditingController(text: widget.userData['income']);
+    housingConditionController = TextEditingController(text: widget.userData['housing_condition']);
+    employmentStatusController = TextEditingController(text: widget.userData['employment_status']);
+    educationLevelController = TextEditingController(text: widget.userData['education_level']);
+  }
+
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _profileImage = File(pickedFile.path);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Perfil do Usuário'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: ListView(
+          children: [
+            GestureDetector(
+              onTap: _pickImage,
+              child: CircleAvatar(
+                radius: 50,
+                backgroundImage: _profileImage != null
+                    ? FileImage(_profileImage!)
+                    : const AssetImage('assets/profile_placeholder.png') as ImageProvider,
+                child: _profileImage == null
+                    ? const Icon(Icons.camera_alt, size: 50, color: Colors.white)
+                    : null,
+              ),
+            ),
+            const SizedBox(height: 20),
+            TextField(
+              controller: fullNameController,
+              decoration: const InputDecoration(labelText: 'Nome Completo'),
+            ),
+            TextField(
+              controller: birthDateController,
+              decoration: const InputDecoration(labelText: 'Data de Nascimento'),
+            ),
+            TextField(
+              controller: genderController,
+              decoration: const InputDecoration(labelText: 'Gênero'),
+            ),
+            TextField(
+              controller: maritalStatusController,
+              decoration: const InputDecoration(labelText: 'Estado Civil'),
+            ),
+            TextField(
+              controller: idNumberController,
+              decoration: const InputDecoration(labelText: 'Número de Identificação'),
+            ),
+            TextField(
+              controller: addressController,
+              decoration: const InputDecoration(labelText: 'Endereço Completo'),
+            ),
+            TextField(
+              controller: phoneController,
+              decoration: const InputDecoration(labelText: 'Telefone'),
+            ),
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(labelText: 'Email'),
+            ),
+            TextField(
+              controller: incomeController,
+              decoration: const InputDecoration(labelText: 'Renda Familiar Total'),
+            ),
+            TextField(
+              controller: housingConditionController,
+              decoration: const InputDecoration(labelText: 'Condição de Moradia'),
+            ),
+            TextField(
+              controller: employmentStatusController,
+              decoration: const InputDecoration(labelText: 'Situação de Emprego'),
+            ),
+            TextField(
+              controller: educationLevelController,
+              decoration: const InputDecoration(labelText: 'Nível de Escolaridade'),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                // Ao pressionar o botão, navegue para a tela de QR Code
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QrCodeView(
+                      data: widget.userData['id_number'], // Passa o número de identificação ou outro dado
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Gerar QR Code'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+//Program_criteria_view.dart
+
+
+import 'package:flutter/material.dart';
+import 'package:frontend_flutter/services/api_service.dart';
+
+class ProgramCriteriaView extends StatelessWidget {
+  final TextEditingController specialNeedsController = TextEditingController();
+  final TextEditingController otherProgramsController = TextEditingController();
+  final TextEditingController healthConditionController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Critérios Específicos')),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(controller: specialNeedsController, decoration: InputDecoration(labelText: 'Necessidades Especiais')),
+            // Demais campos aqui...
+            ElevatedButton(
+              onPressed: () {
+                // Envia todos os dados e retorna à tela de boas-vindas
+              },
+              child: Text('Concluir Cadastro'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// qr_code_view.dart
+
+
+import 'package:flutter/material.dart';
+import 'package:qr_flutter/qr_flutter.dart'; // Importação correta
+import 'package:qr/qr.dart'; // Importação da biblioteca para criar o QrCode
+
+class QrCodeView extends StatelessWidget {
+  final String data;
+
+  const QrCodeView({Key? key, required this.data}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    // Cria o objeto QrCode
+    final qrCode = QrCode.fromData(
+      data: data,  // Passa os dados para o código QR
+      version: QrCodeVersion.auto,
+      errorCorrectLevel: QrErrorCorrectLevel.L, // Define o nível de correção de erro
+    );
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("QR Code")),
+         body: Center(
+        child: QrImage(
+          data: qrCode,
+          version: QrVersions.auto,
+          size: 200.0,
+        ),
+      ),
+    );
+  }
+}
+
+
+import 'package:flutter/material.dart';
+import 'package:frontend_flutter/services/api_service.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'package:qr_dart/qr_dart.dart';
+
+class RegistrationView extends StatelessWidget {
+  RegistrationView({Key? key}) : super(key: key);
+
+  final TextEditingController fullNameController = TextEditingController();
+  final TextEditingController birthDateController = TextEditingController();
+  final TextEditingController genderController = TextEditingController();
+  final TextEditingController maritalStatusController = TextEditingController();
+  final TextEditingController idNumberController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController incomeController = TextEditingController();
+  final TextEditingController housingConditionController = TextEditingController();
+  final TextEditingController employmentStatusController = TextEditingController();
+  final TextEditingController educationLevelController = TextEditingController();
+  final TextEditingController otherSocialProgramsController = TextEditingController();
+  final TextEditingController healthConditionController = TextEditingController();
+  bool specialNeeds = false;
+
+  final ApiService apiService = ApiService();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Cadastro'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              _buildTextField(fullNameController, 'Nome Completo'),
+              _buildTextField(birthDateController, 'Data de Nascimento (yyyy-mm-dd)'),
+              _buildTextField(genderController, 'Gênero'),
+              _buildTextField(maritalStatusController, 'Estado Civil'),
+              _buildTextField(idNumberController, 'Número de Identidade'),
+              _buildTextField(addressController, 'Endereço'),
+              _buildTextField(phoneController, 'Telefone'),
+              _buildTextField(emailController, 'Email'),
+              _buildTextField(passwordController, 'Senha', obscureText: true),
+              _buildTextField(incomeController, 'Renda'),
+              _buildTextField(housingConditionController, 'Condição de Moradia'),
+              _buildTextField(employmentStatusController, 'Status de Emprego'),
+              _buildTextField(educationLevelController, 'Nível de Educação'),
+              SwitchListTile(
+                title: const Text('Necessidades Especiais'),
+                value: specialNeeds,
+                onChanged: (bool value) {
+                  specialNeeds = value;
+                },
+              ),
+              _buildTextField(otherSocialProgramsController, 'Outros Programas Sociais'),
+              _buildTextField(healthConditionController, 'Condição de Saúde'),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () async {
+                  Map<String, dynamic> userData = {
+                    'full_name': fullNameController.text,
+                    'birth_date': birthDateController.text,
+                    'gender': genderController.text,
+                    'marital_status': maritalStatusController.text,
+                    'id_number': idNumberController.text,
+                    'address': addressController.text,
+                    'phone': phoneController.text,
+                    'email': emailController.text,
+                    'password': passwordController.text,
+                    'income': incomeController.text,
+                    'housing_condition': housingConditionController.text,
+                    'employment_status': employmentStatusController.text,
+                    'education_level': educationLevelController.text,
+                    'special_needs': specialNeeds,
+                    'other_social_programs': otherSocialProgramsController.text,
+                    'health_condition': healthConditionController.text,
+                  };
+
+                  final response = await apiService.registerUser(userData);
+
+                  if (response['message'] != null && response['registration_number'] != null) {
+                    final registrationNumber = response['registration_number'];
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(response['message'])),
+                    );
+
+                    // Exibir o QR Code e o número de inscrição
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => RegistrationSuccessView(registrationNumber: registrationNumber),
+                      ),
+                    );
+                  } else if (response['error'] != null) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(response['error'])),
+                    );
+                  }
+                },
+                child: const Text('Cadastrar'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField(
+    TextEditingController controller,
+    String labelText, {
+    bool obscureText = false,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(labelText: labelText),
+        obscureText: obscureText,
+      ),
+    );
+  }
+}
+
+
+//Registration_view.dart 
+
+
+class RegistrationSuccessView extends StatelessWidget {
+  final String registrationNumber;
+
+  const RegistrationSuccessView({Key? key, required this.registrationNumber}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Carteirinha'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Número de Inscrição: $registrationNumber', style: TextStyle(fontSize: 18)),
+            const SizedBox(height: 20),
+            QrImage(
+              data: registrationNumber,
+              version: QrVersions.auto,
+              size: 200.0,
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('Voltar'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+//socioeconomic_data_view.dart
+
+
+import 'package:flutter/material.dart';
+import 'package:frontend_flutter/services/api_service.dart';
+
+class SocioeconomicDataView extends StatelessWidget {
+  final TextEditingController incomeController = TextEditingController();
+  final TextEditingController housingConditionController = TextEditingController();
+  final TextEditingController employmentStatusController = TextEditingController();
+  final TextEditingController educationLevelController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Dados Socioeconômicos')),
+      body: Padding(
+        padding: EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(controller: incomeController, decoration: InputDecoration(labelText: 'Renda Familiar')),
+            // Demais campos aqui...
+            ElevatedButton(
+              onPressed: () {
+                // Avança para a próxima tela (critérios específicos do programa)
+              },
+              child: Text('Próximo'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

@@ -9,7 +9,7 @@ final dbSettings = ConnectionSettings(
   host: 'localhost',
   port: 3306,
   user: 'root',
-  password: 'SUA_SENHA_AQUI', // Insira a senha correta se necessário
+  password: 'SUA_SENHA_AQUI',
   db: 'market_control',
 );
 
@@ -32,7 +32,7 @@ class ApiService {
           data['address'],
           data['phone'],
           data['email'],
-          data['password'],
+          data['password'], // Deve usar hash no futuro
         ],
       );
 
@@ -101,45 +101,48 @@ class ApiService {
   }
 }
 
-// Middleware para habilitar CORS
-Response _corsMiddleware(Response response) {
-  return response.change(headers: {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  });
-}
-
-// Middleware para lidar com requisições OPTIONS e adicionar o cabeçalho CORS
-Handler addCors(Handler handler) {
-  final pipeline = const Pipeline()
-      .addMiddleware(logRequests())
-      .addMiddleware((innerHandler) {
-    return (request) async {
+// Middleware CORS (definido apenas uma vez)
+Middleware handleCors() {
+  return (Handler innerHandler) {
+    return (Request request) async {
+      // Resposta à preflight request (requisição OPTIONS)
       if (request.method == 'OPTIONS') {
         return Response.ok('', headers: {
-          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Origin': '*', // Permite todas as origens
           'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         });
       }
-      final response = await innerHandler(request);
-      return _corsMiddleware(response);
+
+      // Responde normalmente para as requisições de outros métodos
+      Response response = await innerHandler(request);
+
+      return response.change(headers: {
+        'Access-Control-Allow-Origin': '*', // Permite todas as origens
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      });
     };
-  });
-  return pipeline.addHandler(handler);
+  };
 }
 
 void main() async {
   final apiService = ApiService();
   final router = Router();
 
-router.post('/users/register', apiService.registerUser);
-router.post('/users/login', apiService.loginUser);
+  // Rota para o registro de usuário
+  router.post('/users/register', apiService.registerUser);
 
-  // Adiciona o middleware CORS
-  final handler = addCors(router);
+  // Rota para o login de usuário
+  router.post('/users/login', apiService.loginUser);
 
+  // Adiciona o middleware de CORS antes do logRequests() e do handler
+  final handler = const Pipeline()
+      .addMiddleware(logRequests())   // Log das requisições
+      .addMiddleware(handleCors())    // Middleware CORS
+      .addHandler(router);            // Roteamento
+
+  // Servindo a API
   await io.serve(handler, 'localhost', 8080);
-  print('Server listening on http://localhost:8080');
+  print('Server running on http://localhost:8080');
 }
